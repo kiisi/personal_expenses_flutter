@@ -1,10 +1,10 @@
 import 'package:app/models/transaction.dart';
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
+import 'package:app/widgets/transaction_item.dart';
 
 class TransactionList extends StatelessWidget {
   final List<Transaction> transactions;
-  final deleteTx;
+  final Function(String)? deleteTx;
 
   TransactionList(this.transactions, this.deleteTx);
 
@@ -23,47 +23,23 @@ class TransactionList extends StatelessWidget {
               ),
             ]);
           })
-        : ListView.builder(
-            itemBuilder: (context, index) {
-              return Card(
-                margin: EdgeInsets.symmetric(horizontal: 5, vertical: 8),
-                elevation: 3.0,
-                child: ListTile(
-                  leading: CircleAvatar(
-                    radius: 30.0,
-                    child: Padding(
-                      padding: EdgeInsets.all(6.0),
-                      child: FittedBox(
-                        child: Text(
-                            '\$${transactions[index].amount.toStringAsFixed(2)}'),
-                      ),
-                    ),
-                  ),
-                  title: Text('${transactions[index].title}',
-                      style: Theme.of(context).textTheme.titleSmall),
-                  subtitle: Text(
-                    DateFormat.yMMMd().format(transactions[index].date),
-                  ),
-                  trailing: MediaQuery.of(context).size.width > 425
-                      ? TextButton.icon(
-                          onPressed: () => deleteTx(transactions[index].id),
-                          icon: Icon(Icons.delete,
-                              color: Theme.of(context).errorColor),
-                          label: Text(
-                            'Delete',
-                            style:
-                                TextStyle(color: Theme.of(context).errorColor),
-                          ),
-                        )
-                      : IconButton(
-                          onPressed: () => deleteTx(transactions[index].id),
-                          icon: Icon(Icons.delete),
-                          color: Theme.of(context).errorColor,
-                        ),
-                ),
-              );
-            },
-            itemCount: transactions.length,
+        : ListView(
+            children: transactions
+                .map((tx) => TransactionItem(
+                    key: ValueKey(tx.id), transaction: tx, deleteTx: deleteTx))
+                .toList(),
           );
   }
 }
+
+//ListView.builder has key issues in identifying widgets uniquely
+//
+// ListView.builder(
+//             itemBuilder: (context, index) {
+//               return TransactionItem(
+//                   key: ValueKey(transactions[index].id),
+//                   transaction: transactions[index],
+//                   deleteTx: deleteTx);
+//             },
+//             itemCount: transactions.length,
+//           );
